@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:bookstore": "node dist/bookstore/server/server.mjs"
+    "serve:ssr:bookstore": "API_URL=https://localhost:7192/api/v1"
   },
   "prettier": {
     "printWidth": 100,

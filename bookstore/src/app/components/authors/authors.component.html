@@ -1,0 +1,261 @@
+<div class="authors-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1>Gerenciamento de Autores</h1>
+        <p class="subtitle">Gerencie os autores cadastrados no sistema</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateForm()" [disabled]="loading()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Novo Autor
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert de Erro -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z" stroke="currentColor" stroke-width="2"/>
+        <path d="M10 6V10M10 14H10.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (loading() && authors().length === 0 && !error()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Carregando autores...</p>
+    </div>
+  } 
+  
+  <!-- Empty State -->
+  @else if (!loading() && authors().length === 0 && !error()) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <path d="M32 56C45.2548 56 56 45.2548 56 32C56 18.7452 45.2548 8 32 8C18.7452 8 8 18.7452 8 32C8 45.2548 18.7452 56 32 56Z" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M32 20V36M24 28H40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h3>Nenhum autor cadastrado</h3>
+      <p>Comece adicionando seu primeiro autor ao sistema</p>
+      <button class="btn btn-primary" (click)="openCreateForm()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Criar Primeiro Autor
+      </button>
+    </div>
+  } 
+  
+  <!-- Table -->
+  @else if (authors().length > 0) {
+    <div class="table-wrapper">
+      <div class="table-header-controls">
+        <div class="showing-info">
+          Mostrando {{ (currentPage() - 1) * itemsPerPage() + 1 }} - 
+          {{ Math.min(currentPage() * itemsPerPage(), totalItems()) }} de 
+          {{ totalItems() }} autores
+        </div>
+        <div class="items-per-page">
+          <label>Itens por página:</label>
+          <select [value]="itemsPerPage()" (change)="changeItemsPerPage(+$any($event.target).value)">
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="25">25</option>
+            <option [value]="50">50</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="authors-table">
+          <thead>
+            <tr>
+              <th>Nome do Autor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (author of paginatedAuthors; track author.id) {
+              <tr>
+                <td>
+                  <div class="author-name-cell">
+                    <div class="avatar">{{ author.name.charAt(0).toUpperCase() }}</div>
+                    <span class="name">{{ author.name }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="actions">
+                    <button 
+                      class="btn-icon btn-edit" 
+                      (click)="openEditForm(author)" 
+                      [disabled]="loading()"
+                      title="Editar">
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <path d="M12.75 2.25L15.75 5.25M1.5 16.5L4.875 16.125L16.125 4.875C16.5234 4.47656 16.75 3.93969 16.75 3.375C16.75 2.81031 16.5234 2.27344 16.125 1.875C15.7266 1.47656 15.1897 1.25 14.625 1.25C14.0603 1.25 13.5234 1.47656 13.125 1.875L1.875 13.125L1.5 16.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                    <button 
+                      class="btn-icon btn-delete" 
+                      (click)="deleteAuthor(author.id, author.name)" 
+                      [disabled]="loading()"
+                      title="Excluir">
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <path d="M2.25 4.5H15.75M14.25 4.5V15C14.25 15.75 13.5 16.5 12.75 16.5H5.25C4.5 16.5 3.75 15.75 3.75 15V4.5M6 4.5V3C6 2.25 6.75 1.5 7.5 1.5H10.5C11.25 1.5 12 2.25 12 3V4.5M7.5 8.25V12.75M10.5 8.25V12.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginação -->
+      @if (totalPages > 1) {
+        <div class="pagination-container">
+          <button 
+            class="pagination-btn"
+            (click)="previousPage()"
+            [disabled]="currentPage() === 1">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Anterior
+          </button>
+
+          <div class="pagination-numbers">
+            @for (page of visiblePages; track page) {
+              @if (page === -1) {
+                <span class="pagination-ellipsis">...</span>
+              } @else {
+                <button
+                  class="pagination-number"
+                  [class.active]="page === currentPage()"
+                  (click)="goToPage(page)">
+                  {{ page }}
+                </button>
+              }
+            }
+          </div>
+
+          <button 
+            class="pagination-btn"
+            (click)="nextPage()"
+            [disabled]="currentPage() === totalPages">
+            Próxima
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Modal Form -->
+  @if (showForm()) {
+    <div class="modal-overlay" (click)="closeForm()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h2>{{ editingAuthor() ? 'Editar Autor' : 'Novo Autor' }}</h2>
+            <p class="modal-subtitle">{{ editingAuthor() ? 'Atualize as informações do autor' : 'Preencha os dados do novo autor' }}</p>
+          </div>
+          <button class="btn-close" (click)="closeForm()" title="Fechar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        
+        <form [formGroup]="authorForm" (ngSubmit)="saveAuthor()" class="author-form">
+          <div class="form-group">
+            <label for="name">Nome do Autor <span class="required">*</span></label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              class="form-control"
+              [class.invalid]="authorForm.get('name')?.invalid && authorForm.get('name')?.touched"
+              placeholder="Ex: Machado de Assis"
+              autocomplete="off"
+            />
+            @if (authorForm.get('name')?.invalid && authorForm.get('name')?.touched) {
+              <span class="error-message">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M8 5V8M8 11H8.005" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                @if (authorForm.get('name')?.errors?.['required']) {
+                  O nome do autor é obrigatório
+                } @else if (authorForm.get('name')?.errors?.['minlength']) {
+                  O nome deve ter pelo menos 2 caracteres
+                }
+              </span>
+            }
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeForm()" [disabled]="loading()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="authorForm.invalid || loading()">
+              @if (loading()) {
+                <div class="btn-spinner"></div>
+                Salvando...
+              } @else {
+                {{ editingAuthor() ? 'Atualizar Autor' : 'Criar Autor' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Delete Confirmation Modal -->
+  @if (showDeleteConfirm()) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="delete-modal" (click)="$event.stopPropagation()">
+        <div class="delete-icon">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="3"/>
+            <path d="M24 14V26M24 32H24.02" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        
+        <div class="delete-content">
+          <h3>Excluir Autor</h3>
+          <p>Tem certeza que deseja excluir o autor <strong>{{ authorToDelete()?.name }}</strong>?</p>
+          <p class="delete-warning">Esta ação não pode ser desfeita.</p>
+        </div>
+        
+        <div class="delete-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancelDelete()" [disabled]="loading()">
+            Cancelar
+          </button>
+          <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="loading()">
+            @if (loading()) {
+              <div class="btn-spinner"></div>
+              Excluindo...
+            } @else {
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M2.25 4.5H15.75M14.25 4.5V15C14.25 15.75 13.5 16.5 12.75 16.5H5.25C4.5 16.5 3.75 15.75 3.75 15V4.5M6 4.5V3C6 2.25 6.75 1.5 7.5 1.5H10.5C11.25 1.5 12 2.25 12 3V4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Sim, Excluir
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
