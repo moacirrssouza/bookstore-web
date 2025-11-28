@@ -1,30 +1,31 @@
-<div class="home-container">
-  <div class="welcome-section">
-    <h1>Bem-vindo ao Bookstore</h1>
-    <p class="subtitle">Sistema de gerenciamento de livraria</p>
-  </div>
+<div class="menu-wrapper">
+  <section class="header-section">
+    <h1>Bem-Vindo ao sistema Bookstore</h1>
+    <p>Sistema Gerenciamento Bookstore</p>
+  </section>
 
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon">📚</div>
+  <section class="menu-grid">
+
+     <div class="menu-card">
+      <div class="menu-icon"><i class="fa-solid fa-layer-group"></i></div>
+      <h2>Gêneros</h2>
+      <p>Gerenciar categorias de livros</p>
+      <a routerLink="/genres" class="menu-btn">Acessar</a>
+    </div>
+
+    <div class="menu-card">
+      <div class="menu-icon"><i class="fa-solid fa-user-pen"></i></div>
       <h2>Autores</h2>
-      <p>Gerencie os autores da sua livraria</p>
-      <a routerLink="/authors" class="btn btn-primary">Gerenciar Autores</a>
+      <p>Gerenciar autores cadastrados</p>
+      <a routerLink="/authors" class="menu-btn">Acessar</a>
     </div>
 
-    <div class="feature-card">
-      <div class="feature-icon">📖</div>
+    <div class="menu-card disabled">
+      <div class="menu-icon"><i class="fa-solid fa-book-open"></i></div>
       <h2>Livros</h2>
-      <p>Em breve: gerenciamento de livros</p>
-      <button class="btn btn-secondary" disabled>Em breve</button>
+      <p>Disponível em breve</p>
+      <a routerLink="/books" class="menu-btn">Acessar</a>
     </div>
 
-    <div class="feature-card">
-      <div class="feature-icon">📊</div>
-      <h2>Relatórios</h2>
-      <p>Em breve: relatórios e estatísticas</p>
-      <button class="btn btn-secondary" disabled>Em breve</button>
-    </div>
-  </div>
+  </section>
 </div>
-
