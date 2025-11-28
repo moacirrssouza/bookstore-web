@@ -15,16 +15,13 @@ export class AuthorService {
 
   private handleError = (error: HttpErrorResponse) => {
     let errorMessage = 'Ocorreu um erro desconhecido';
-    
-    // Verifica se está no browser (ErrorEvent só existe no browser, não no SSR)
     const isBrowser = typeof window !== 'undefined';
     const isClientError = isBrowser && error.error instanceof ErrorEvent;
     
     if (isClientError) {
-      // Erro do lado do cliente (browser)
       errorMessage = `Erro: ${error.error.message}`;
-    } else {
-      // Erro do lado do servidor ou SSR
+    } 
+    else {
       if (error.status === 0) {
         errorMessage = 'Não foi possível conectar à API. Verifique se o servidor está rodando e se há problemas de CORS.';
       } else if (error.error?.message) {
@@ -69,4 +66,3 @@ export class AuthorService {
       .pipe(catchError(this.handleError));
   }
 }
-
