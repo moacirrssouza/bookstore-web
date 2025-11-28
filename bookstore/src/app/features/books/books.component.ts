@@ -30,6 +30,8 @@ export class BooksComponent implements OnInit {
   bookForm: FormGroup;
   authors = signal<AuthorDto[]>([]);
   genres = signal<GenreDto[]>([]);
+  successMessage = signal<string | null>(null)
+
 
   constructor(
     private booksStore: BooksStore,
@@ -56,6 +58,13 @@ export class BooksComponent implements OnInit {
     this.loadBooks();
     this.authorsStore.loadAll().subscribe();
     this.genresStore.loadAll().subscribe();
+  }
+
+    showSuccess(message: string) { 
+    this.successMessage.set(message);
+    setTimeout(() => {
+      this.successMessage.set(null);
+    }, 3000);
   }
 
   loadBooks(): void {
@@ -258,23 +267,37 @@ export class BooksComponent implements OnInit {
         console.log('Livro salvo com sucesso:', response);
         this.closeForm();
 
-        setTimeout(() => {
-          this.loading.set(false);
-          this.loadBooks();
-        }, 100);
+        this.loading.set(false);
+        if (editing) {
+          this.showSuccess('Livro atualizado com sucesso.');
+        } else {
+          this.showSuccess('Livro criado com sucesso.');
+        }
+        this.loadBooks();
       },
       error: (err) => {
         this.loading.set(false);
         let errorMessage = 'Erro ao salvar livro.';
-        
-        if (err.status === 400 && err.error?.message) {
+
+        if (err.status === 0) {
+          errorMessage = 'Não foi possível conectar à API. Verifique se o servidor está rodando e CORS.';
+        } else if (err.status === 400 && err.error?.message) {
           errorMessage = err.error.message;
-        } else if (err.status === 0) {
-          errorMessage = 'Não foi possível conectar à API. Verifique se o servidor está rodando.';
+        } else if (err.status === 409) {
+          errorMessage = 'Já existe um livro com este nome.';
+        } else if (err.status === 500) {
+          errorMessage = 'Erro interno no servidor ao salvar livro.';
+          if (typeof err.error === 'string') {
+            errorMessage += ` Detalhes: ${err.error.substring(0, 120)}`;
+          } else if (err.error?.message) {
+            errorMessage += ` Detalhes: ${err.error.message}`;
+          }
+        } else if (err.error?.message) {
+          errorMessage = err.error.message;
         } else if (err.message) {
           errorMessage = err.message;
         }
-        
+
         this.error.set(errorMessage);
         console.error('Error saving book:', err);
       }

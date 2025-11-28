@@ -290,7 +290,6 @@ export class GenresComponent implements OnInit {
         console.error('Error saving genre:', err);
       }
     });
-
   }
 
   deleteGenre(id: string, name: string): void {

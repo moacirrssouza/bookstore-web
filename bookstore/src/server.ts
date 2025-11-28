@@ -36,6 +36,15 @@ app.use(
 );
 
 /**
+ * Runtime config endpoint to expose API_URL to the browser.
+ */
+app.get('/config.js', (_req, res) => {
+  const apiUrl = process.env['API_URL'] || 'http://localhost:8080/api/v1';
+  res.type('application/javascript');
+  res.send(`window.API_URL=${JSON.stringify(apiUrl)};`);
+});
+
+/**
  * Handle all other requests by rendering the Angular application.
  */
 app.use((req, res, next) => {

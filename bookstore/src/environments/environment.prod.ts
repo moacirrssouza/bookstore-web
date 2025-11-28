@@ -1,4 +1,7 @@
 export const environment = {
   production: true,
-  apiUrl: process.env['API_URL'] || 'https://localhost:7192/api/v1'
+  apiUrl:
+    (typeof process !== 'undefined' && process.env?.['API_URL']) ||
+    (typeof window !== 'undefined' && (window as any)['API_URL']) ||
+    'http://localhost:8080/api/v1'
 };

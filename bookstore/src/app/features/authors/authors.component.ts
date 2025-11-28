@@ -12,25 +12,19 @@ import { AuthorDto, CreateAuthorDto } from '../../models/author.dto';
   styleUrl: './authors.component.scss'
 })
 export class AuthorsComponent implements OnInit {
-  // Expor Math para o template
   Math = Math;
-  
   authors = signal<AuthorDto[]>([]);
   loading = signal(false);
   error = signal<string | null>(null);
   showForm = signal(false);
   editingAuthor = signal<AuthorDto | null>(null);
-  
-  // Signals para o modal de exclusão
   showDeleteConfirm = signal(false);
   authorToDelete = signal<{id: string, name: string} | null>(null);
-  
-  // Signals para paginação
   currentPage = signal(1);
   itemsPerPage = signal(10);
   totalItems = signal(0);
-  
   authorForm: FormGroup;
+   successMessage = signal<string | null>(null)
 
   constructor(
     private authorsStore: AuthorsStore,
@@ -50,6 +44,13 @@ export class AuthorsComponent implements OnInit {
     this.loadAuthors();
   }
 
+    showSuccess(message: string) { 
+    this.successMessage.set(message);
+    setTimeout(() => {
+      this.successMessage.set(null);
+    }, 3000);
+  }
+
   loadAuthors(): void {
     console.log('Iniciando carregamento de autores...');
     this.loading.set(true);
@@ -58,49 +59,49 @@ export class AuthorsComponent implements OnInit {
     this.authorsStore.loadAll().subscribe({
       next: (response) => {
         try {
-          console.log('✅ Resposta completa da API:', response);
-          console.log('✅ Tipo da resposta:', typeof response);
-          console.log('✅ É array?', Array.isArray(response));
+          console.log('Resposta completa da API:', response);
+          console.log('Tipo da resposta:', typeof response);
+          console.log('É array?', Array.isArray(response));
           
           let authorsData: AuthorDto[] = [];
           
           if (response && typeof response === 'object') {
             if ('data' in response && response.data !== null && response.data !== undefined) {
-              console.log('📦 response.data encontrado:', response.data);
+              console.log('response.data encontrado:', response.data);
               if (Array.isArray(response.data)) {
                 authorsData = response.data;
-                console.log(`📊 Array de autores extraído: ${authorsData.length} itens`);
+                console.log(`Array de autores extraído: ${authorsData.length} itens`);
               } else if (typeof response.data === 'object') {
                 authorsData = [response.data as AuthorDto];
-                console.log('📄 Objeto único convertido para array');
+                console.log('Objeto único convertido para array');
               }
             } else if (Array.isArray(response)) {
               authorsData = response;
-              console.log(`📊 Response é array direto: ${authorsData.length} itens`);
+              console.log(`Response é array direto: ${authorsData.length} itens`);
             } else {
-              console.warn('⚠️ Formato de resposta não reconhecido. Keys:', Object.keys(response));
+              console.warn('Formato de resposta não reconhecido. Keys:', Object.keys(response));
             }
           } else {
-            console.warn('⚠️ Resposta inválida ou vazia:', response);
+            console.warn('Resposta inválida ou vazia:', response);
           }
           
-          console.log(`✅ Total de autores processados: ${authorsData.length}`);
+          console.log(`Total de autores processados: ${authorsData.length}`);
           
           // Atualiza o total de itens para paginação
           this.totalItems.set(this.authorsStore.authors().length);
           this.loading.set(false);
           
           if (authorsData.length === 0) {
-            console.log('ℹ️ Nenhum autor encontrado - exibindo empty state');
+            console.log('ℹNenhum autor encontrado - exibindo empty state');
           }
         } catch (error) {
-          console.error('❌ Erro ao processar resposta:', error);
+          console.error('Erro ao processar resposta:', error);
           this.error.set('Erro ao processar dados da API.');
           this.loading.set(false);
         }
       },
       error: (err) => {
-        console.error('❌❌❌ ERRO NA REQUISIÇÃO ❌❌❌');
+        console.error('ERRO NA REQUISIÇÃO');
         console.error('Status:', err.status);
         console.error('Status Text:', err.statusText);
         console.error('URL tentada:', err.url);
@@ -109,20 +110,19 @@ export class AuthorsComponent implements OnInit {
         console.error('Error body:', err.error);
         
         this.loading.set(false);
-        
         let errorMessage = 'Erro ao carregar autores.';
         
         if (err.status === 0) {
           errorMessage = 'Não foi possível conectar à API. Verifique se o servidor está rodando e se o CORS está configurado corretamente.';
-          console.error('💡 DICA: Verifique se a API está rodando em: https://localhost:7192');
+          console.error('DICA: Verifique se a API está rodando em: https://localhost:7192');
         } else if (err.status === 404) {
           errorMessage = `Endpoint não encontrado (404). Verifique se a rota está correta: ${err.url}`;
-          console.error('💡 DICA: Verifique se a rota da API está correta no service');
+          console.error('DICA: Verifique se a rota da API está correta no service');
         } else if (err.status === 500) {
           errorMessage = 'Erro interno no servidor (500). Verifique os logs do backend.';
-          console.error('💡 DICA: Olhe os logs do seu backend .NET para ver o erro específico');
+          console.error('DICA: Olhe os logs do seu backend .NET para ver o erro específico');
           if (err.error) {
-            console.error('💡 Detalhes do erro do backend:', err.error);
+            console.error('Detalhes do erro do backend:', err.error);
             if (typeof err.error === 'string') {
               errorMessage += ` Detalhes: ${err.error.substring(0, 100)}`;
             } else if (err.error.message) {
@@ -138,43 +138,37 @@ export class AuthorsComponent implements OnInit {
         }
         
         this.error.set(errorMessage);
-        console.error('🔴 Mensagem de erro definida:', errorMessage);
+        console.error('Mensagem de erro definida:', errorMessage);
       }
     });
   }
 
-  // Computed para autores paginados
   get paginatedAuthors(): AuthorDto[] {
     const start = (this.currentPage() - 1) * this.itemsPerPage();
     const end = start + this.itemsPerPage();
     return this.authors().slice(start, end);
   }
 
-  // Computed para total de páginas
   get totalPages(): number {
     return Math.ceil(this.totalItems() / this.itemsPerPage());
   }
 
-  // Computed para array de páginas a serem exibidas
   get visiblePages(): number[] {
     const total = this.totalPages;
     const current = this.currentPage();
     const pages: number[] = [];
     
     if (total <= 7) {
-      // Se tem 7 ou menos páginas, mostra todas
       for (let i = 1; i <= total; i++) {
         pages.push(i);
       }
     } else {
-      // Sempre mostra primeira página
+    
       pages.push(1);
-      
       if (current > 3) {
-        pages.push(-1); // -1 representa "..."
+        pages.push(-1); 
       }
       
-      // Páginas ao redor da atual
       const start = Math.max(2, current - 1);
       const end = Math.min(total - 1, current + 1);
       
@@ -183,17 +177,15 @@ export class AuthorsComponent implements OnInit {
       }
       
       if (current < total - 2) {
-        pages.push(-1); // -1 representa "..."
+        pages.push(-1); 
       }
       
-      // Sempre mostra última página
       pages.push(total);
     }
     
     return pages;
   }
 
-  // Métodos de navegação
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage.set(page);
@@ -214,7 +206,7 @@ export class AuthorsComponent implements OnInit {
 
   changeItemsPerPage(items: number): void {
     this.itemsPerPage.set(items);
-    this.currentPage.set(1); // Volta para primeira página
+    this.currentPage.set(1); 
   }
 
   openCreateForm(): void {
@@ -261,15 +253,15 @@ export class AuthorsComponent implements OnInit {
     operation.subscribe({
       next: (response) => {
         console.log('Autor salvo com sucesso:', response);
-        
-        // Fecha o modal primeiro
         this.closeForm();
-        
-        // Pequeno delay para garantir que o modal fechou
-        setTimeout(() => {
-          this.loading.set(false);
-          this.loadAuthors();
-        }, 100);
+
+        this.loading.set(false);
+        if (editing) {
+          this.showSuccess('Autor atualizado com sucesso.');
+        } else {
+          this.showSuccess('Autor criado com sucesso.');
+        }
+        this.loadAuthors();
       },
       error: (err) => {
         this.loading.set(false);
@@ -295,12 +287,11 @@ export class AuthorsComponent implements OnInit {
         }
 
         this.error.set(errorMessage);
-        console.error('Error saving author:', err);
+        console.error('Error saving genre:', err);
       }
     });
   }
 
-  // Método para abrir o modal de confirmação
   deleteAuthor(id: string, name: string): void {
     console.log('deleteAuthor chamado - ID:', id, 'Nome:', name);
     this.authorToDelete.set({id, name});
@@ -309,16 +300,13 @@ export class AuthorsComponent implements OnInit {
     console.log('Autor para deletar:', this.authorToDelete());
   }
 
-  // Método para cancelar a exclusão
   cancelDelete(): void {
     this.showDeleteConfirm.set(false);
     this.authorToDelete.set(null);
   }
 
-  // Método para confirmar e executar a exclusão
   confirmDelete(): void {
     const author = this.authorToDelete();
-    
     console.log('confirmDelete chamado');
     console.log('Author to delete:', author);
     
@@ -328,7 +316,6 @@ export class AuthorsComponent implements OnInit {
     }
 
     console.log(`Iniciando exclusão do autor ID: ${author.id}, Nome: ${author.name}`);
-    
     this.loading.set(true);
     this.error.set(null);
 

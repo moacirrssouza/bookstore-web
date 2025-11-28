@@ -27,7 +27,7 @@
     </div>
   }
 
-  <!-- Alert de Sucesso -->
+<!-- Alert de Sucesso -->
 @if (successMessage()) {
   <div class="alert alert-success">
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -71,9 +71,7 @@
 
   <!-- Table -->
   @else if (genres().length > 0) {
-
     <div class="table-wrapper">
-
       <div class="table-header-controls">
         <div class="showing-info">
           Mostrando {{ (currentPage() - 1) * itemsPerPage() + 1 }} -
@@ -202,7 +200,7 @@
           </button>
         </div>
 
-        <form [formGroup]="genreForm" (ngSubmit)="saveGenre()" class="author-form">
+        <form [formGroup]="genreForm" (ngSubmit)="saveGenre()" class="genre-form">
 
           <div class="form-group">
             <label for="name">Nome do Gênero <span class="required">*</span></label>
