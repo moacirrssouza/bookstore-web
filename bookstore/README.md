@@ -1,59 +1,42 @@
-# Bookstore
+# Bookstore Web
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.9.
+Aplicação Angular para gerenciar Livros, Autores e Gêneros, com renderização no servidor (SSR) via Node/Express. Consome uma API .NET.
 
-## Development server
+## Tecnologias
+- Angular 20 (Standalone Components, Signals)
+- SSR Node/Express
+- RxJS
+- Jasmine/Karma (testes)
 
-To start a local development server, run:
+## Estrutura
+- `src/app/features/` telas: `authors`, `genres`, `books`
+- `src/app/core/services/api/` clientes HTTP para API
+- `src/app/core/store/` stores reativos (Signals)
+- `src/environments/` configurações (`apiUrl`)
 
-```bash
-ng serve
-```
+## Configuração
+- API URL: ajuste em `src/environments/environment.ts` (`apiUrl`).
+- Versão de API: use `v1` ou `v1.0` conforme seu backend.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Desenvolvimento
+- Instalar dependências: `npm install`
+- Executar em dev: `npm start` e acessar `http://localhost:4200`
+- API .NET deve estar acessível em `https://localhost:7192`
 
-## Code scaffolding
+## Build/SSR
+- Build: `npm run build`
+- Executar SSR: `node dist/bookstore/server/server.mjs` (porta `4000`)
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Testes
+- Todos os testes: `npm test -- --watch=false`
+- Somente componentes: `npm test -- --watch=false --include "src/app/features/*/*.component.spec.ts"`
 
-```bash
-ng generate component component-name
-```
+## Docker
+- Build e subir: `docker compose up --build`
+- Acesso: `http://localhost:4000`
+- Variáveis: `API_URL` pode ser definida no `docker-compose.yml`
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Rotas Principais
+- `/authors` — Autores
+- `/genres` — Gêneros
+- `/books` — Livros

@@ -1,17 +1,17 @@
-<div class="genres-container">
+<div class="books-container">
 
   <!-- Header -->
   <div class="page-header">
     <div class="header-content">
       <div class="title-section">
-        <h1>Gerenciamento de Gêneros</h1>
-        <p class="subtitle">Gerencie os gêneros cadastrados no sistema</p>
+        <h1>Gerenciamento de Livros</h1>
+        <p class="subtitle">Gerencie os livros cadastrados no sistema</p>
       </div>
       <button class="btn btn-primary" (click)="openCreateForm()" [disabled]="loading()">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        Novo Gênero
+        Novo Livro
       </button>
     </div>
   </div>
@@ -28,15 +28,15 @@
   }
 
   <!-- Loading State -->
-  @if (loading() && genres().length === 0 && !error()) {
+  @if (loading() && books().length === 0 && !error()) {
     <div class="loading-container">
       <div class="spinner"></div>
-      <p>Carregando gêneros...</p>
+      <p>Carregando livros...</p>
     </div>
   }
 
   <!-- Empty State -->
-  @else if (!loading() && genres().length === 0 && !error()) {
+  @else if (!loading() && books().length === 0 && !error()) {
     <div class="empty-state">
       <div class="empty-icon">
         <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
@@ -44,19 +44,19 @@
           <path d="M32 20V36M24 28H40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
         </svg>
       </div>
-      <h3>Nenhum gênero cadastrado</h3>
-      <p>Comece adicionando seu primeiro gênero ao sistema</p>
+      <h3>Nenhum livro cadastrado</h3>
+      <p>Comece adicionando seu primeiro livro ao sistema</p>
       <button class="btn btn-primary" (click)="openCreateForm()">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        Criar Primeiro Gênero
+        Criar Primeiro Livro
       </button>
     </div>
   }
 
   <!-- Table -->
-  @else if (genres().length > 0) {
+  @else if (books().length > 0) {
 
     <div class="table-wrapper">
 
@@ -64,7 +64,7 @@
         <div class="showing-info">
           Mostrando {{ (currentPage() - 1) * itemsPerPage() + 1 }} -
           {{ Math.min(currentPage() * itemsPerPage(), totalItems()) }} de
-          {{ totalItems() }} gêneros
+          {{ totalItems() }} livros
         </div>
 
         <div class="items-per-page">
@@ -79,28 +79,29 @@
       </div>
 
       <div class="table-container">
-        <table class="genres-table">
+        <table class="books-table">
           <thead>
             <tr>
-              <th>Nome do Gênero</th>
+              <th>Título</th>
+              <th>Autor</th>
+              <th>Gênero</th>
+              <th>Descrição</th>
               <th>Ações</th>
             </tr>
           </thead>
 
           <tbody>
-            @for (genre of paginatedGenres; track genre.id) {
+            @for (book of paginatedBooks; track book.id) {
               <tr>
-                <td>
-                  <div class="author-name-cell">
-                    <div class="avatar">{{ genre.name.charAt(0).toUpperCase() }}</div>
-                    <span class="name">{{ genre.name }}</span>
-                  </div>
-                </td>
+                <td> {{ book.name }}</td>
+                <td>{{ book.author }}</td>
+                <td>{{ book.genre || 'Sem gênero' }}</td>
+                 <td>{{ book.description }}</td>
                 <td>
                   <div class="actions">
                     <button
                       class="btn-icon btn-edit"
-                      (click)="openEditForm(genre)"
+                      (click)="openEditForm(book)"
                       [disabled]="loading()"
                       title="Editar"
                     >
@@ -110,7 +111,7 @@
                     </button>
                     <button
                       class="btn-icon btn-delete"
-                      (click)="deleteGenre(genre.id, genre.name)"
+                      (click)="deleteBook(book.id, book.name)"
                       [disabled]="loading()"
                       title="Excluir"
                     >
@@ -181,9 +182,9 @@
 
         <div class="modal-header">
           <div>
-            <h2>{{ editingGenre() ? 'Editar Gênero' : 'Novo Gênero' }}</h2>
+            <h2>{{ editingBook() ? 'Editar Livro' : 'Novo Livro' }}</h2>
             <p class="modal-subtitle">
-              {{ editingGenre() ? 'Atualize as informações do gênero' : 'Preencha os dados do novo gênero' }}
+              {{ editingBook() ? 'Atualize as informações do livro' : 'Preencha os dados do novo livro' }}
             </p>
           </div>
           <button class="btn-close" (click)="closeForm()" title="Fechar">
@@ -193,44 +194,103 @@
           </button>
         </div>
 
-        <form [formGroup]="genreForm" (ngSubmit)="saveGenre()" class="author-form">
+        <form [formGroup]="bookForm" (ngSubmit)="saveBook()" class="book-form">
 
           <div class="form-group">
-            <label for="name">Nome do Gênero <span class="required">*</span></label>
+            <label for="name">Título <span class="required">*</span></label>
             <input
               type="text"
               id="name"
               formControlName="name"
               class="form-control"
-              [class.invalid]="genreForm.get('name')?.invalid && genreForm.get('name')?.touched"
-              placeholder="Ex: Fantasia"
+              [class.invalid]="bookForm.get('name')?.invalid && bookForm.get('name')?.touched"
+              placeholder="Ex: O Senhor dos Anéis"
               autocomplete="off"
             />
-            @if (genreForm.get('name')?.invalid && genreForm.get('name')?.touched) {
+            @if (bookForm.get('name')?.invalid && bookForm.get('name')?.touched) {
               <span class="error-message">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z" stroke="currentColor" stroke-width="1.5"/>
                   <path d="M8 5V8M8 11H8.005" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
-                @if (genreForm.get('name')?.errors?.['required']) {
-                  O nome do gênero é obrigatório
-                } @else if (genreForm.get('name')?.errors?.['minlength']) {
-                  O nome deve ter pelo menos 2 caracteres
+                @if (bookForm.get('name')?.errors?.['required']) {
+                  O título é obrigatório
+                } @else if (bookForm.get('name')?.errors?.['minlength']) {
+                  O título deve ter pelo menos 2 caracteres
                 }
               </span>
             }
+          </div>
+
+          <div class="form-group">
+            <label for="authorId">Autor <span class="required">*</span></label>
+            <select
+              id="authorId"
+              formControlName="authorId"
+              class="form-control"
+              [class.invalid]="bookForm.get('authorId')?.invalid && bookForm.get('authorId')?.touched"
+            >
+              <option value="" disabled selected>Selecione um autor</option>
+              @for (author of authors(); track author.id) {
+                <option [value]="author.id">{{ author.name }}</option>
+              }
+            </select>
+            @if (bookForm.get('authorId')?.invalid && bookForm.get('authorId')?.touched) {
+              <span class="error-message">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M8 5V8M8 11H8.005" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                O autor é obrigatório
+              </span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="genreId">Gênero <span class="required">*</span></label>
+            <select
+              id="genreId"
+              formControlName="genreId"
+              class="form-control"
+              [class.invalid]="bookForm.get('genreId')?.invalid && bookForm.get('genreId')?.touched"
+            >
+              <option value="" disabled selected>Selecione um gênero</option>
+              @for (genre of genres(); track genre.id) {
+                <option [value]="genre.id">{{ genre.name }}</option>
+              }
+            </select>
+            @if (bookForm.get('genreId')?.invalid && bookForm.get('genreId')?.touched) {
+              <span class="error-message">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M8 5V8M8 11H8.005" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                O gênero é obrigatório
+              </span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="description">Descrição</label>
+            <textarea
+              id="description"
+              formControlName="description"
+              class="form-control"
+              rows="4"
+              placeholder="Descrição do livro"
+            ></textarea>
           </div>
 
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="closeForm()" [disabled]="loading()">
               Cancelar
             </button>
-            <button type="submit" class="btn btn-primary" [disabled]="genreForm.invalid || loading()">
+            <button type="submit" class="btn btn-primary" [disabled]="bookForm.invalid || loading()">
               @if (loading()) {
                 <div class="btn-spinner"></div>
                 Salvando...
               } @else {
-                {{ editingGenre() ? 'Atualizar Gênero' : 'Criar Gênero' }}
+                {{ editingBook() ? 'Atualizar Livro' : 'Criar Livro' }}
               }
             </button>
           </div>
@@ -254,8 +314,8 @@
         </div>
 
         <div class="delete-content">
-          <h3>Excluir Gênero</h3>
-          <p>Tem certeza que deseja excluir o gênero <strong>{{ genreToDelete()?.name }}</strong>?</p>
+          <h3>Excluir Livro</h3>
+          <p>Tem certeza que deseja excluir o livro <strong>{{ bookToDelete()?.name }}</strong>?</p>
           <p class="delete-warning">Esta ação não pode ser desfeita.</p>
         </div>
 

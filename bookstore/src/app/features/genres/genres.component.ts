@@ -1,7 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { GenreService } from '../../services/genre.service';
+import { GenresStore } from '../../core/store/genres.store';
 import { GenreDto, CreateGenreDto } from '../../models/genre.dto';
 
 @Component({
@@ -25,13 +25,19 @@ export class GenresComponent implements OnInit {
   itemsPerPage = signal(10);
   totalItems = signal(0);
   genreForm: FormGroup;
+  successMessage = signal<string | null>(null)
 
   constructor(
-    private genreService: GenreService,
+    private genresStore: GenresStore,
     private fb: FormBuilder
   ) {
     this.genreForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]]
+    });
+    effect(() => {
+      this.genres.set(this.genresStore.genres());
+      this.loading.set(this.genresStore.loading());
+      this.error.set(this.genresStore.error());
     });
   }
 
@@ -39,12 +45,19 @@ export class GenresComponent implements OnInit {
     this.loadGenres();
   }
 
+  showSuccess(message: string) { 
+    this.successMessage.set(message);
+    setTimeout(() => {
+      this.successMessage.set(null);
+    }, 3000);
+  }
+
   loadGenres(): void {
     console.log('Iniciando carregamento de gêneros...');
     this.loading.set(true);
     this.error.set(null);
     
-    this.genreService.getAll().subscribe({
+    this.genresStore.loadAll().subscribe({
       next: (response) => {
         try {
           console.log('Resposta completa da API:', response);
@@ -74,8 +87,7 @@ export class GenresComponent implements OnInit {
           }
           
           console.log(`Total de gêneros processados: ${genresData.length}`);
-          this.totalItems.set(genresData.length);
-          this.genres.set(genresData);
+          this.totalItems.set(this.genresStore.genres().length);
           this.loading.set(false);
           
           if (genresData.length === 0) {
@@ -221,40 +233,64 @@ export class GenresComponent implements OnInit {
     }
 
     const dto: CreateGenreDto = this.genreForm.value;
+    const name = (dto.name || '').trim();
+    if (!name) {
+      return;
+    }
+    const exists = this.genres().some(g => g.name.toLowerCase() === name.toLowerCase());
+    if (exists && !this.editingGenre()) {
+      this.error.set('Já existe um gênero com este nome.');
+      return;
+    }
     this.loading.set(true);
     this.error.set(null);
 
     const editing = this.editingGenre();
     const operation = editing
-      ? this.genreService.update(editing.id, dto)
-      : this.genreService.create(dto);
+      ? this.genresStore.update(editing.id, dto)
+      : this.genresStore.create(dto);
 
     operation.subscribe({
       next: (response) => {
         console.log('Gênero salvo com sucesso:', response);
         this.closeForm();
 
-        setTimeout(() => {
-          this.loading.set(false);
-          this.loadGenres();
-        }, 100);
+        this.loading.set(false);
+        if (editing) {
+          this.showSuccess('Gênero atualizado com sucesso.');
+        } else {
+          this.showSuccess('Gênero criado com sucesso.');
+        }
+        this.loadGenres();
       },
       error: (err) => {
         this.loading.set(false);
         let errorMessage = 'Erro ao salvar gênero.';
-        
-        if (err.status === 400 && err.error?.message) {
+
+        if (err.status === 0) {
+          errorMessage = 'Não foi possível conectar à API. Verifique se o servidor está rodando e CORS.';
+        } else if (err.status === 400 && err.error?.message) {
           errorMessage = err.error.message;
-        } else if (err.status === 0) {
-          errorMessage = 'Não foi possível conectar à API. Verifique se o servidor está rodando.';
+        } else if (err.status === 409) {
+          errorMessage = 'Já existe um gênero com este nome.';
+        } else if (err.status === 500) {
+          errorMessage = 'Erro interno no servidor ao salvar gênero.';
+          if (typeof err.error === 'string') {
+            errorMessage += ` Detalhes: ${err.error.substring(0, 120)}`;
+          } else if (err.error?.message) {
+            errorMessage += ` Detalhes: ${err.error.message}`;
+          }
+        } else if (err.error?.message) {
+          errorMessage = err.error.message;
         } else if (err.message) {
           errorMessage = err.message;
         }
-        
+
         this.error.set(errorMessage);
         console.error('Error saving genre:', err);
       }
     });
+
   }
 
   deleteGenre(id: string, name: string): void {
@@ -286,7 +322,7 @@ export class GenresComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.genreService.delete(genre.id).subscribe({
+    this.genresStore.delete(genre.id).subscribe({
       next: () => {
         console.log('Gênero excluído com sucesso!');
         this.cancelDelete();

@@ -85,6 +85,9 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
+            "include": [
+              "src/**/*.spec.ts"
+            ],
             "assets": [
               {
                 "glob": "**/*",

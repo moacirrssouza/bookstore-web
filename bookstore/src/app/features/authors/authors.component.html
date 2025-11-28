@@ -85,12 +85,7 @@
           <tbody>
             @for (author of paginatedAuthors; track author.id) {
               <tr>
-                <td>
-                  <div class="author-name-cell">
-                    <div class="avatar">{{ author.name.charAt(0).toUpperCase() }}</div>
-                    <span class="name">{{ author.name }}</span>
-                  </div>
-                </td>
+                <td>{{ author.name }}</td>
                 <td>
                   <div class="actions">
                     <button 
