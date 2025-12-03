@@ -285,14 +285,24 @@
           </div>
 
           <div class="form-group">
-            <label for="description">Descrição</label>
+            <label for="description">Descrição <span class="required">*</span></label>
             <textarea
               id="description"
               formControlName="description"
               class="form-control"
+              [class.invalid]="bookForm.get('description')?.invalid && bookForm.get('description')?.touched"
               rows="4"
               placeholder="Descrição do livro"
             ></textarea>
+            @if (bookForm.get('description')?.invalid && bookForm.get('description')?.touched) {
+              <span class="error-message">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M8 5V8M8 11H8.005" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                A descrição é obrigatória
+              </span>
+            }
           </div>
 
           <div class="form-actions">

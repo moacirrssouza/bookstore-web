@@ -43,7 +43,7 @@ export class BooksComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(2)]],
       authorId: ['', [Validators.required]],
       genreId: ['', [Validators.required]],
-      description: ['']
+      description: ['', [Validators.required]]
     });
     effect(() => {
       this.books.set(this.booksStore.books());

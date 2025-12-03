@@ -10,5 +10,5 @@ export interface CreateBookDto {
   name: string;
   authorId: string;
   genreId: string;
-  description?: string;
+  description: string;
 }
